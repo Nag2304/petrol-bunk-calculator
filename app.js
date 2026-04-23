@@ -6,6 +6,8 @@ const nozzleCountEl = document.querySelector("#nozzleCount");
 const grossLitresEl = document.querySelector("#grossLitres");
 const testLitresEl = document.querySelector("#testLitres");
 const netLitresEl = document.querySelector("#netLitres");
+const petrolGrossLitresEl = document.querySelector("#petrolGrossLitres");
+const dieselGrossLitresEl = document.querySelector("#dieselGrossLitres");
 const calculationTextEl = document.querySelector("#calculationText");
 const toastEl = document.querySelector("#toast");
 
@@ -22,10 +24,10 @@ const litreFormatter = new Intl.NumberFormat("en-IN", {
 });
 
 const exampleRows = [
-  { name: "Nozzle 1", close: 1200, open: 700, test: 5, rate: 110.34 },
-  { name: "Nozzle 2", close: 1300, open: 600, test: 2, rate: 98.22 },
-  { name: "Nozzle 3", close: 1900, open: 1000, test: 1, rate: 98.22 },
-  { name: "Nozzle 4", close: 1600, open: 1200, test: 4, rate: 110.34 }
+  { name: "Nozzle 1", fuel: "Petrol", close: 1200, open: 700, test: 5, rate: 110.34 },
+  { name: "Nozzle 2", fuel: "Diesel", close: 1300, open: 600, test: 2, rate: 98.22 },
+  { name: "Nozzle 3", fuel: "Diesel", close: 1900, open: 1000, test: 1, rate: 98.22 },
+  { name: "Nozzle 4", fuel: "Petrol", close: 1600, open: 1200, test: 4, rate: 110.34 }
 ];
 
 let rows = [];
@@ -69,6 +71,14 @@ function trimNumber(value) {
   });
 }
 
+function defaultFuel(name, index) {
+  const normalized = String(name || "").toLowerCase();
+  if (normalized.includes("1") || normalized.includes("4") || index === 0 || index === 3) {
+    return "Petrol";
+  }
+  return "Diesel";
+}
+
 function rowTemplate(row, index) {
   const calc = calculate(row);
   const isInvalid = calc.sold < 0;
@@ -76,6 +86,12 @@ function rowTemplate(row, index) {
     <tr data-id="${row.id}" class="${isInvalid ? "row-error" : ""}">
       <td>
         <input class="name-input" data-field="name" value="${escapeHtml(row.name)}" aria-label="Nozzle name ${index + 1}">
+      </td>
+      <td>
+        <select class="fuel-select" data-field="fuel" aria-label="${escapeHtml(row.name)} fuel type">
+          <option value="Petrol" ${row.fuel === "Petrol" ? "selected" : ""}>Petrol</option>
+          <option value="Diesel" ${row.fuel === "Diesel" ? "selected" : ""}>Diesel</option>
+        </select>
       </td>
       <td>
         <input class="number-input" data-field="close" type="number" min="0" step="0.001" value="${row.close}" aria-label="${escapeHtml(row.name)} close reading">
@@ -120,13 +136,25 @@ function updateSummary() {
   const totals = rows.reduce(
     (acc, row) => {
       const calc = calculate(row);
+      const fuelKey = row.fuel === "Petrol" ? "petrol" : "diesel";
       acc.gross += calc.gross;
       acc.test += numberValue(row.test);
       acc.net += calc.sold;
       acc.amount += calc.amount;
+      acc[fuelKey].gross += calc.gross;
+      acc[fuelKey].test += numberValue(row.test);
+      acc[fuelKey].net += calc.sold;
+      acc[fuelKey].amount += calc.amount;
       return acc;
     },
-    { gross: 0, test: 0, net: 0, amount: 0 }
+    {
+      gross: 0,
+      test: 0,
+      net: 0,
+      amount: 0,
+      petrol: { gross: 0, test: 0, net: 0, amount: 0 },
+      diesel: { gross: 0, test: 0, net: 0, amount: 0 }
+    }
   );
 
   grandTotalEl.textContent = formatMoney(totals.amount);
@@ -135,6 +163,8 @@ function updateSummary() {
   grossLitresEl.textContent = formatLitres(totals.gross);
   testLitresEl.textContent = formatLitres(totals.test);
   netLitresEl.textContent = formatLitres(totals.net);
+  petrolGrossLitresEl.textContent = formatLitres(totals.petrol.gross);
+  dieselGrossLitresEl.textContent = formatLitres(totals.diesel.gross);
   calculationTextEl.textContent = buildSummaryText(totals);
 }
 
@@ -142,7 +172,7 @@ function buildSummaryText(totals) {
   const dateLine = saleDateEl.value ? `Date: ${saleDateEl.value}\n` : "";
   const rowLines = rows.map((row, index) => {
     const calc = calculate(row);
-    return `${row.name || `Nozzle ${index + 1}`}: ${trimNumber(row.close)} close - ${trimNumber(row.open)} open - ${trimNumber(row.test)} test = ${trimNumber(calc.sold)} L x ${trimNumber(row.rate)} = ${formatMoney(calc.amount)}`;
+    return `${row.name || `Nozzle ${index + 1}`} (${row.fuel}): ${trimNumber(row.close)} close - ${trimNumber(row.open)} open - ${trimNumber(row.test)} test = ${trimNumber(calc.sold)} L x ${trimNumber(row.rate)} = ${formatMoney(calc.amount)}`;
   });
 
   return [
@@ -150,9 +180,16 @@ function buildSummaryText(totals) {
     ...rowLines,
     "",
     `Gross reading: ${formatLitres(totals.gross)}`,
+    `Petrol gross reading: ${formatLitres(totals.petrol.gross)}`,
+    `Diesel gross reading: ${formatLitres(totals.diesel.gross)}`,
     `Testing: ${formatLitres(totals.test)}`,
     `Net sold: ${formatLitres(totals.net)}`,
-    `Total collection: ${formatMoney(totals.amount)}`
+    `Petrol net sold: ${formatLitres(totals.petrol.net)} | ${formatMoney(totals.petrol.amount)}`,
+    `Diesel net sold: ${formatLitres(totals.diesel.net)} | ${formatMoney(totals.diesel.amount)}`,
+    `Total collection: ${formatMoney(totals.amount)}`,
+    "",
+    "Developed by Nagendra Babu",
+    "Contact: jnb226@gmail.com"
   ].filter(Boolean).join("\n");
 }
 
@@ -161,6 +198,7 @@ function addRow(data = {}) {
   rows.push({
     id: uid(),
     name: data.name ?? `Nozzle ${nextNumber}`,
+    fuel: data.fuel ?? defaultFuel(data.name, nextNumber - 1),
     close: data.close ?? "",
     open: data.open ?? "",
     test: data.test ?? 0,
@@ -173,6 +211,7 @@ function setRows(nextRows) {
   rows = nextRows.map((row, index) => ({
     id: row.id || uid(),
     name: row.name || `Nozzle ${index + 1}`,
+    fuel: row.fuel || defaultFuel(row.name, index),
     close: row.close ?? "",
     open: row.open ?? "",
     test: row.test ?? 0,
@@ -250,7 +289,7 @@ function fallbackCopy(text) {
 
 function syncRowOutput(rowEl, row) {
   const calc = calculate(row);
-  const testCell = rowEl.querySelector("td:nth-child(4)");
+  const testCell = rowEl.querySelector("td:nth-child(5)");
   const existingNote = testCell.querySelector(".field-note");
 
   rowEl.classList.toggle("row-error", calc.sold < 0);
@@ -261,12 +300,12 @@ function syncRowOutput(rowEl, row) {
     existingNote.remove();
   }
 
-  rowEl.querySelector("td:nth-child(6) .computed").textContent = formatLitres(calc.sold);
-  rowEl.querySelector("td:nth-child(7) .computed").textContent = formatMoney(calc.amount);
+  rowEl.querySelector("td:nth-child(7) .computed").textContent = formatLitres(calc.sold);
+  rowEl.querySelector("td:nth-child(8) .computed").textContent = formatMoney(calc.amount);
 }
 
-rowsEl.addEventListener("input", (event) => {
-  const input = event.target.closest("input");
+function handleRowEdit(event) {
+  const input = event.target.closest("input, select");
   if (!input) return;
 
   const rowEl = input.closest("tr");
@@ -278,7 +317,10 @@ rowsEl.addEventListener("input", (event) => {
   saveState();
 
   syncRowOutput(rowEl, row);
-});
+}
+
+rowsEl.addEventListener("input", handleRowEdit);
+rowsEl.addEventListener("change", handleRowEdit);
 
 rowsEl.addEventListener("click", (event) => {
   const button = event.target.closest(".remove-row");
@@ -300,7 +342,7 @@ document.querySelector("#loadExample").addEventListener("click", () => {
 });
 document.querySelector("#clearRows").addEventListener("click", () => {
   saleDateEl.value = todayValue();
-  setRows([{ name: "Nozzle 1", close: "", open: "", test: 0, rate: 110.34 }]);
+  setRows([{ name: "Nozzle 1", fuel: "Petrol", close: "", open: "", test: 0, rate: 110.34 }]);
   showToast("Sheet cleared");
 });
 document.querySelector("#shareSummary").addEventListener("click", shareSummary);
