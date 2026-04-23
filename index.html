@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Petrol Bunk Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Daily sales sheet</p>
+          <h1>Petrol bunk calculator</h1>
+          <p class="subtitle">Enter closing, opening, testing litres and rate for each nozzle. The app calculates net litres and amount instantly.</p>
+        </div>
+        <div class="hero-total" aria-live="polite">
+          <span>Total collection</span>
+          <strong id="grandTotal">Rs 0.00</strong>
+          <small id="grandLitres">0.000 L sold</small>
+        </div>
+      </section>
+
+      <section class="toolbar" aria-label="Calculator actions">
+        <div class="date-field">
+          <label for="saleDate">Date</label>
+          <input id="saleDate" type="date">
+        </div>
+        <button class="secondary" id="loadExample" type="button" title="Fill the sample values">
+          <span aria-hidden="true">Reset</span>
+          Example
+        </button>
+        <button class="secondary" id="addRow" type="button" title="Add another nozzle">
+          <span aria-hidden="true">+</span>
+          Add nozzle
+        </button>
+        <button class="secondary" id="clearRows" type="button" title="Clear all values">
+          <span aria-hidden="true">x</span>
+          Clear
+        </button>
+        <button class="primary" id="shareSummary" type="button" title="Share or copy the result">
+          <span aria-hidden="true">^</span>
+          Share
+        </button>
+      </section>
+
+      <section class="calculator">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nozzle</th>
+                <th>Close</th>
+                <th>Open</th>
+                <th>Testing</th>
+                <th>Rate / L</th>
+                <th>Sold</th>
+                <th>Amount</th>
+                <th aria-label="Actions"></th>
+              </tr>
+            </thead>
+            <tbody id="nozzleRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="summary-grid" aria-label="Summary">
+        <article class="summary-card">
+          <span>Nozzles</span>
+          <strong id="nozzleCount">0</strong>
+        </article>
+        <article class="summary-card">
+          <span>Gross reading</span>
+          <strong id="grossLitres">0.000 L</strong>
+        </article>
+        <article class="summary-card">
+          <span>Testing</span>
+          <strong id="testLitres">0.000 L</strong>
+        </article>
+        <article class="summary-card">
+          <span>Net sold</span>
+          <strong id="netLitres">0.000 L</strong>
+        </article>
+      </section>
+
+      <section class="result-sheet">
+        <div class="sheet-header">
+          <h2>Calculation sheet</h2>
+          <button class="secondary icon-only" id="printSheet" type="button" title="Print">
+            <span aria-hidden="true">P</span>
+          </button>
+        </div>
+        <pre id="calculationText" aria-live="polite"></pre>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
