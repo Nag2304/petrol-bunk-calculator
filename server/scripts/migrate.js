@@ -1,15 +1,8 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import pool from "../src/config/db.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { runMigrations } from "../src/config/migrate.js";
 
 async function migrate() {
-  const sqlPath = path.join(__dirname, "..", "sql", "001_init.sql");
-  const sql = await fs.readFile(sqlPath, "utf8");
-  await pool.query(sql);
+  await runMigrations();
   console.log("Database migration complete.");
   await pool.end();
 }
