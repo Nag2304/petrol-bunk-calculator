@@ -24,8 +24,16 @@ app.use(
       const allowedOrigins = [env.CLIENT_ORIGIN];
       const isLocalhost =
         /^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+      let isRenderDomain = false;
 
-      if (allowedOrigins.includes(origin) || isLocalhost) {
+      try {
+        const hostname = new URL(origin).hostname;
+        isRenderDomain = hostname.endsWith(".onrender.com");
+      } catch {
+        isRenderDomain = false;
+      }
+
+      if (allowedOrigins.includes(origin) || isLocalhost || isRenderDomain) {
         return callback(null, true);
       }
 
