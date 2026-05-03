@@ -1,33 +1,70 @@
 # Petrol Bunk Calculator
 
-A simple static web app for daily petrol bunk nozzle calculations.
+Full-stack petrol bunk management app with:
 
-## Features
+- Public homepage and about route
+- React frontend
+- Node.js + Express backend
+- PostgreSQL database
+- JWT authentication
+- Monthly dashboard with pie chart
+- Day-wise tracker calendar
+- Daily nozzle entry management
+- WhatsApp and email sharing
 
-- Closing minus opening minus testing litre calculation
-- Per-nozzle rate and amount calculation
-- Grand total, gross reading, testing litres, and net sold summary
-- Example data loader
-- Share/copy and print support
-- Works as plain static HTML, CSS, and JavaScript
+## Project structure
 
-## Formula
+- `client/` - React + Vite frontend
+- `server/` - Express API and PostgreSQL integration
 
-```text
-sold litres = closing reading - opening reading - testing litres
-amount = sold litres x rate per litre
+## Local setup
+
+1. Copy `server/.env.example` to `server/.env`
+2. Update the PostgreSQL connection string for your local database
+3. Install dependencies:
+
+```bash
+npm install
 ```
 
-## Run locally
+4. Run migrations:
 
-Open `index.html` in a browser.
+```bash
+npm run db:migrate
+```
 
-## Host on GitHub Pages
+5. Start the app:
 
-After pushing this folder to GitHub:
+```bash
+npm run dev
+```
 
-1. Open the repository on GitHub.
-2. Go to Settings > Pages.
-3. Under Build and deployment, choose `Deploy from a branch`.
-4. Select the `main` branch and `/ (root)` folder.
-5. Save. GitHub will publish the website after a short build.
+Frontend dev URL: `http://localhost:5173` or the next free Vite port
+
+Backend dev URL: `http://localhost:4000`
+
+Main routes:
+
+- `/` - Public homepage
+- `/about` - Product overview
+- `/login` - Login
+- `/register` - Registration
+- `/dashboard` - Protected app dashboard
+
+## PostgreSQL database
+
+You mentioned a local database named `Petrol Bunk Calculator`.
+Use a URL like this in `server/.env`:
+
+```text
+DATABASE_URL=postgresql://postgres:your_password@localhost:5432/Petrol%20Bunk%20Calculator
+```
+
+## Render deployment
+
+- This repo includes `render.yaml` for a single Node web service deployment.
+- Run build: `npm install && npm run build`
+- Run start: `npm run start`
+- The backend serves the built React app in production, so one Render web service is enough.
+- Set `DATABASE_URL` to your production PostgreSQL connection string.
+- Set `CLIENT_ORIGIN` to your Render app URL after the first deploy.
